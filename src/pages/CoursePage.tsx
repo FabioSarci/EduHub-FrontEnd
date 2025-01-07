@@ -5,18 +5,20 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, BookOpen, Brain, FileText } from "lucide-react";
+import { PlusCircle, BookOpen, Brain, FileText, Upload } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { IFile } from "@/interfaces/Document";
 
 interface IDocument {
     id: number;
     title: string;
     content: string;
+    files?: IFile[];
     createdAt: string;
 }
 
@@ -36,6 +38,7 @@ const CoursePage = () => {
     const [quizzes, setQuizzes] = useState<IQuiz[]>([]);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [activeTab, setActiveTab] = useState("documents");
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
     useEffect(() => {
         const fetchCourseDetails = async () => {
@@ -90,18 +93,53 @@ const CoursePage = () => {
         fetchCourseDetails();
     }, [id]);
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            setSelectedFiles(Array.from(e.target.files));
+        }
+    };
+
     const handleDocumentSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
-        const newDocument = {
-            id: documents.length + 1,
-            title: formData.get('title') as string,
-            content: formData.get('content') as string,
-            createdAt: new Date().toISOString()
-        };
+        
+        const token = localStorage.getItem("ACCESS_TOKEN");
+        if (token) {
+            try {
+                // Upload dei file
+                const uploadPromises = selectedFiles.map(file => {
+                    const fileFormData = new FormData();
+                    fileFormData.append('file', file);
+                    
+                    return axios.post<IFile>(`http://localhost:7001/files/upload`, fileFormData, {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            'Content-Type': 'multipart/form-data',
+                            'Accept': 'application/json',
+                            'Access-Control-Allow-Origin': '*'
+                        },
+                        withCredentials: true
+                    });
+                });
 
-        setDocuments([newDocument, ...documents]);
-        setIsDialogOpen(false);
+                const uploadedFiles = await Promise.all(uploadPromises);
+                
+                // Crea il nuovo documento con i file caricati
+                const newDocument = {
+                    id: documents.length + 1,
+                    title: formData.get('title') as string,
+                    content: formData.get('content') as string,
+                    files: uploadedFiles.map(response => response.data),
+                    createdAt: new Date().toISOString()
+                };
+
+                setDocuments([newDocument, ...documents]);
+                setSelectedFiles([]);
+                setIsDialogOpen(false);
+            } catch (error) {
+                console.error('Error uploading document:', error);
+            }
+        }
     };
 
     return (
@@ -160,8 +198,43 @@ const CoursePage = () => {
                                         <Label htmlFor="content">Contenuto</Label>
                                         <Textarea id="content" name="content" required />
                                     </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="files">Allegati</Label>
+                                        <div className="border-2 border-dashed border-cyan-800 rounded-lg p-4">
+                                            <Input
+                                                id="files"
+                                                type="file"
+                                                multiple
+                                                className="hidden"
+                                                onChange={handleFileChange}
+                                            />
+                                            <label 
+                                                htmlFor="files" 
+                                                className="flex flex-col items-center justify-center cursor-pointer"
+                                            >
+                                                <Upload className="h-8 w-8 text-cyan-800 mb-2" />
+                                                <span className="text-sm text-cyan-800">
+                                                    {selectedFiles.length > 0 
+                                                        ? `${selectedFiles.length} file selezionati` 
+                                                        : 'Clicca per caricare i file'}
+                                                </span>
+                                            </label>
+                                        </div>
+                                        {selectedFiles.length > 0 && (
+                                            <div className="mt-2">
+                                                <p className="text-sm font-medium mb-2">File selezionati:</p>
+                                                <ul className="text-sm space-y-1">
+                                                    {selectedFiles.map((file, index) => (
+                                                        <li key={index} className="text-cyan-600">
+                                                            {file.name}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </div>
                                     <Button type="submit" className="w-full bg-cyan-800 hover:bg-cyan-900">
-                                        Carica
+                                        Pubblica
                                     </Button>
                                 </form>
                             </DialogContent>
@@ -181,7 +254,25 @@ const CoursePage = () => {
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <p className="text-cyan-600">{doc.content}</p>
+                                    <p className="text-cyan-600 mb-4">{doc.content}</p>
+                                    {doc.files && doc.files.length > 0 && (
+                                        <div className="mt-4">
+                                            <h4 className="text-sm font-medium mb-2">Allegati:</h4>
+                                            <div className="flex flex-wrap gap-2">
+                                                {doc.files.map((file) => (
+                                                    <Button
+                                                        key={file.id}
+                                                        variant="outline"
+                                                        className="text-xs"
+                                                        onClick={() => window.open(file.path, '_blank')}
+                                                    >
+                                                        <FileText className="h-4 w-4 mr-2" />
+                                                        {file.filename}
+                                                    </Button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </CardContent>
                             </Card>
                         ))}
