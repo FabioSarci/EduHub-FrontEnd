@@ -19,27 +19,39 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
+    const formatDate = (date: string | undefined) => {
+        if (!date) return "";
+        return new Date(date).toISOString().split('T')[0];
+    };
+
     const { register, handleSubmit, formState: { errors }, reset } = useForm<IUser>({
         defaultValues: {
             id: user?.id,
             name: user?.name || "",
             surname: user?.surname || "",
-            birthdate: user?.birthdate || "",
+            birthdate: formatDate(user?.birthdate),
             role: user?.role
         }
     });
     
     useEffect(() => {
-        if (user) {
+        if (!isOpen || user) {
             reset({
-                id: user.id,
-                name: user.name,
-                surname: user.surname,
-                birthdate: user.birthdate,
-                role: user.role
+                id: user?.id,
+                name: user?.name || "",
+                surname: user?.surname || "",
+                birthdate: formatDate(user?.birthdate),
+                role: user?.role
             });
         }
-    }, [user, reset]);
+    }, [user, reset, isOpen]);
+
+    const handleOpenChange = (open: boolean) => {
+        setIsOpen(open);
+        if (!open) {
+            reset();
+        }
+    };
 
     const onSubmit = async (data: IUser) => {
         setIsLoading(true);
@@ -51,6 +63,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                     Authorization: `Bearer ${token}`,
                 }
             });
+            
+            if (token) {
+                await getUser(token, false);
+            }
             
             toast({
                 title: "Profilo aggiornato",
@@ -84,7 +100,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                                         EduHub DashBoard
                                     </h1>
                                 </div>
-                                <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                                <Dialog open={isOpen} onOpenChange={handleOpenChange}>
                                     <DialogTrigger>
                                         <Avatar className="rounded-full bg-white/70 border border-cyan-800">
                                             <AvatarImage
