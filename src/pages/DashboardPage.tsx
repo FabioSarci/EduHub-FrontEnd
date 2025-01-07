@@ -9,37 +9,47 @@ export default function DashboardPage() {
 
   const {user} = useAuth()
   const {usercourses, getCourses} = useCourseContext();
-  const [courses, setCourses] = useState<ICourseProps[]>();
-  const token = localStorage.getItem("ACCESS_TOKEN");
-
-  useEffect(() =>{
-    const token = localStorage.getItem("ACCESS_TOKEN");
-    if(token && user?.id){
-      getCourses(token,user?.id)
-      console.log(usercourses);
-    }
-    
-  },[])
+  const [courses, setCourses] = useState<ICourseProps[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("ACCESS_TOKEN");
-    if (usercourses) {
-        usercourses.forEach((course) => {
-            axios
-                .get(`http://localhost:7001/course/${course.id}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                })
-                .then(({ data }) => {
-                    setCourses((prevCourses =[]) => [...prevCourses, data]);
-                })
-                .catch((err) => console.error("Error fetching course:", err));
-        });
-    }
-}, [usercourses]);
+    const fetchUserCourses = async () => {
+      const token = localStorage.getItem("ACCESS_TOKEN");
+      if(token && user?.id && !usercourses?.length) {
+        await getCourses(token, user.id);
+      }
+    };
+    
+    fetchUserCourses();
+  }, [user?.id]);
 
-  
+  useEffect(() => {
+    const fetchCourseDetails = async () => {
+      const token = localStorage.getItem("ACCESS_TOKEN");
+      if (token && (usercourses ?? []).length > 0 && isLoading) {
+        try {
+          const responses = await Promise.all(
+            (usercourses ?? []).map(course => 
+              axios.get(`http://localhost:7001/course/${course.id}`, {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              })
+            )
+          );
+          
+          const courseData = responses.map(res => res.data);
+          setCourses(courseData);
+          setIsLoading(false);
+        } catch (err) {
+          console.error("Error fetching courses:", err);
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchCourseDetails();
+  }, [usercourses, isLoading]);
 
   return (
     <>

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Sidebar } from './Sidebar'
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { Avatar } from './ui/avatar'
@@ -9,63 +9,74 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { DialogTitle } from '@radix-ui/react-dialog'
 import { Label } from '@radix-ui/react-label'
 import { Input } from './ui/input'
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { useUserContext } from '@/contexts/UserContext'
 import { IUser } from '@/interfaces/User'
+import axios from 'axios'
+import { toast } from '@/hooks/use-toast'
+import { useForm } from 'react-hook-form'
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
-    const { credential, user, logout } = useAuth();
+    const { credential, user, getUser } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
-    const { handleUserEdit } = useUserContext();
+    const [isLoading, setIsLoading] = useState(false);
 
-    const [userLayout, setUserLayout] = useState<IUser>({
-        id: user?.id ?? 0,
-        name: user?.name ?? "",
-        surname: user?.surname ?? "",
-        birthdate: user?.birthdate ?? "",
-        role: user?.role,
-    });
-
-    const { register, handleSubmit, formState: { errors }, watch, reset } = useForm({
+    const { register, handleSubmit, formState: { errors }, reset } = useForm<IUser>({
         defaultValues: {
-            id: userLayout?.id ?? 0,
-            name: userLayout?.name ?? "",
-            surname: userLayout?.surname ?? "",
-            birthdate: userLayout?.birthdate ?? "",
-            role: userLayout?.role ?? ""
+            id: user?.id,
+            name: user?.name || "",
+            surname: user?.surname || "",
+            birthdate: user?.birthdate || "",
+            role: user?.role
         }
     });
     
-    // Update userLayout whenever input fields change
     useEffect(() => {
-        if (userLayout) {
+        if (user) {
             reset({
-                id: userLayout.id,
-                name: userLayout.name,
-                surname: userLayout.surname,
-                birthdate: userLayout.birthdate,
-                role: userLayout.role
+                id: user.id,
+                name: user.name,
+                surname: user.surname,
+                birthdate: user.birthdate,
+                role: user.role
             });
         }
-    }, [userLayout, reset]);
+    }, [user, reset]);
 
-    const onSubmit = async (data: any) => {
+    const onSubmit = async (data: IUser) => {
+        setIsLoading(true);
+        const token = localStorage.getItem("ACCESS_TOKEN");
+        
         try {
-            handleUserEdit(data);
+            await axios.put(`http://localhost:7001/user/edit`, data, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            });
+            
+            toast({
+                title: "Profilo aggiornato",
+                description: "Le modifiche sono state salvate con successo.",
+            });
+            
             setIsOpen(false);
         } catch (error) {
+            toast({
+                variant: "destructive",
+                title: "Errore",
+                description: "Si è verificato un errore durante l'aggiornamento del profilo.",
+            });
             console.error('Error updating user:', error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
         <SidebarProvider>
             <div className="blurred-background">
-                <div className="flex h-screen">
+                <div className="flex">
                     <Sidebar />
                     <main className="flex-1 content">
-                        <div className="p-4 ">
+                        <div className="p-4">
                             <div className="w-full border-b p-2 border-b-cyan-800 flex justify-between text-lg gap-10 my-auto mx-auto items-center">
                                 <div className="flex items-center">
                                     <SidebarTrigger className="" />
@@ -81,7 +92,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                                                 alt="@johndoe"
                                             />
                                             <AvatarFallback className="flex items-center mx-auto">
-                                                {`${user?.name.charAt(0)}${user?.name.charAt(1)}`.toUpperCase()}
+                                                {`${user?.name.charAt(0)}${user?.surname.charAt(0)}`.toUpperCase()}
                                             </AvatarFallback>
                                         </Avatar>
                                     </DialogTrigger>
@@ -98,7 +109,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                                                             alt="@johndoe"
                                                         />
                                                         <AvatarFallback className="flex items-center mx-auto">
-                                                            {`${user?.name.charAt(0)}${user?.name.charAt(1)}`.toUpperCase()}
+                                                            {`${user?.name.charAt(0)}${user?.surname.charAt(0)}`.toUpperCase()}
                                                         </AvatarFallback>
                                                     </Avatar>
                                                     <div>
@@ -111,48 +122,44 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                                         <form onSubmit={handleSubmit(onSubmit)}>
                                             <div className="grid gap-4 py-4">
                                                 <div className="grid grid-cols-4 items-center gap-4">
-                                                    <Label htmlFor="name" className="text-right">Name</Label>
+                                                    <Label htmlFor="name" className="text-right">Nome</Label>
                                                     <Input
                                                         id="name"
                                                         className="col-span-3"
-                                                        {...register("name", { required: "Name is required" })}
+                                                        {...register("name", { required: "Il nome è obbligatorio" })}
                                                     />
                                                     {errors.name && <p className="text-red-500 text-sm col-span-4 text-right">{errors.name.message}</p>}
                                                 </div>
                                                 <div className="grid grid-cols-4 items-center gap-4">
-                                                    <Label htmlFor="surname" className="text-right">Surname</Label>
+                                                    <Label htmlFor="surname" className="text-right">Cognome</Label>
                                                     <Input
                                                         id="surname"
                                                         className="col-span-3"
-                                                        {...register("surname", { required: "Surname is required" })}
+                                                        {...register("surname", { required: "Il cognome è obbligatorio" })}
                                                     />
                                                     {errors.surname && <p className="text-red-500 text-sm col-span-4 text-right">{errors.surname.message}</p>}
                                                 </div>
                                                 <div className="grid grid-cols-4 items-center gap-4">
-                                                    <Label htmlFor="birthdate" className="text-right">Birthdate</Label>
+                                                    <Label htmlFor="birthdate" className="text-right">Data di nascita</Label>
                                                     <Input
                                                         id="birthdate"
                                                         type="date"
                                                         className="col-span-3"
-                                                        {...register("birthdate", { required: "Birthdate is required" })}
+                                                        {...register("birthdate", { required: "La data di nascita è obbligatoria" })}
                                                     />
                                                     {errors.birthdate && <p className="text-red-500 text-sm col-span-4 text-right">{errors.birthdate.message}</p>}
                                                 </div>
-                                                <div className="grid grid-cols-4 items-center gap-4">
-                                                    <Label htmlFor="role" className="text-right">Role</Label>
-                                                    <Input
-                                                        id="role"
-                                                        className="col-span-3"
-                                                        {...register("role", { required: "Role is required" })}
-                                                    />
-                                                    {errors.role && <p className="text-red-500 text-sm col-span-4 text-right">{errors.role.message}</p>}
-                                                </div>
                                             </div>
                                             <DialogFooter>
-                                                <Button className="bg-cyan-800 hover:bg-cyan-900 text-white" type="submit">Save changes</Button>
+                                                <Button 
+                                                    type="submit" 
+                                                    className="bg-cyan-800 hover:bg-cyan-900 text-white"
+                                                    disabled={isLoading}
+                                                >
+                                                    {isLoading ? "Salvataggio..." : "Salva modifiche"}
+                                                </Button>
                                             </DialogFooter>
                                         </form>
-
                                     </DialogContent>
                                 </Dialog>
                             </div>
