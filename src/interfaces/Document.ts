@@ -5,14 +5,8 @@ export interface IFile {
     mimetype: string;
     size: number;
     userId: number;
-    createdAt: string;
-    updatedAt: string;
-}
-
-export interface IDocument {
-    id: number;
     title: string;
     content: string;
-    files?: IFile[];
     createdAt: string;
+    updatedAt: string;
 } 

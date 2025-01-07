@@ -1,5 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { ICourseProps } from "@/interfaces/Course";
+import { IFile } from "@/interfaces/Document";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -12,15 +13,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { IFile } from "@/interfaces/Document";
-
-interface IDocument {
-    id: number;
-    title: string;
-    content: string;
-    files?: IFile[];
-    createdAt: string;
-}
 
 interface IQuiz {
     id: number;
@@ -34,11 +26,16 @@ const CoursePage = () => {
     const { id } = useParams();
     const { user } = useAuth();
     const [course, setCourse] = useState<ICourseProps>();
-    const [documents, setDocuments] = useState<IDocument[]>([]);
+    const [files, setFiles] = useState<IFile[]>([]);
     const [quizzes, setQuizzes] = useState<IQuiz[]>([]);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState("documents");
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            setSelectedFiles(Array.from(e.target.files));
+        }
+    };
 
     useEffect(() => {
         const fetchCourseDetails = async () => {
@@ -52,19 +49,19 @@ const CoursePage = () => {
                     });
                     setCourse(response.data);
                     
-                    // Dati di esempio
-                    setDocuments([
+                    // Qui dovresti fare una chiamata API per ottenere i file del corso
+                    setFiles([
                         {
                             id: 1,
+                            filename: "introduzione.pdf",
                             title: "Introduzione al corso",
                             content: "Materiale introduttivo del corso",
-                            createdAt: new Date().toISOString()
-                        },
-                        {
-                            id: 2,
-                            title: "Lezione 1 - Slides",
-                            content: "Slides della prima lezione",
-                            createdAt: new Date().toISOString()
+                            path: "/files/intro.pdf",
+                            mimetype: "application/pdf",
+                            size: 1024,
+                            userId: 1,
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString()
                         }
                     ]);
 
@@ -93,12 +90,6 @@ const CoursePage = () => {
         fetchCourseDetails();
     }, [id]);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            setSelectedFiles(Array.from(e.target.files));
-        }
-    };
-
     const handleDocumentSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
@@ -106,38 +97,28 @@ const CoursePage = () => {
         const token = localStorage.getItem("ACCESS_TOKEN");
         if (token) {
             try {
-                // Upload dei file
-                const uploadPromises = selectedFiles.map(file => {
-                    const fileFormData = new FormData();
-                    fileFormData.append('file', file);
-                    
-                    return axios.post<IFile>(`http://localhost:7001/files/upload`, fileFormData, {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            'Content-Type': 'multipart/form-data',
-                            'Accept': 'application/json',
-                            'Access-Control-Allow-Origin': '*'
-                        },
-                        withCredentials: true
-                    });
+                const fileFormData = new FormData();
+                fileFormData.append('title', formData.get('title') as string);
+                fileFormData.append('content', formData.get('content') as string);
+                if (selectedFiles[0]) {
+                    fileFormData.append('file', selectedFiles[0]);
+                }
+
+                const response = await axios.post<IFile>(`http://localhost:7001/files/upload`, fileFormData, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'multipart/form-data',
+                        'Accept': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    withCredentials: true
                 });
 
-                const uploadedFiles = await Promise.all(uploadPromises);
-                
-                // Crea il nuovo documento con i file caricati
-                const newDocument = {
-                    id: documents.length + 1,
-                    title: formData.get('title') as string,
-                    content: formData.get('content') as string,
-                    files: uploadedFiles.map(response => response.data),
-                    createdAt: new Date().toISOString()
-                };
-
-                setDocuments([newDocument, ...documents]);
+                setFiles([response.data, ...files]);
                 setSelectedFiles([]);
                 setIsDialogOpen(false);
             } catch (error) {
-                console.error('Error uploading document:', error);
+                console.error('Error uploading file:', error);
             }
         }
     };
@@ -242,37 +223,27 @@ const CoursePage = () => {
                     </div>
 
                     <div className="space-y-4">
-                        {documents.map((doc) => (
-                            <Card key={doc.id} className="border border-cyan-800 bg-white rounded-xl">
+                        {files.map((file) => (
+                            <Card key={file.id} className="border border-cyan-800 bg-white rounded-xl">
                                 <CardHeader>
                                     <div className="flex items-center space-x-2">
                                         <FileText className="h-5 w-5 text-cyan-600" />
-                                        <CardTitle className="text-lg text-cyan-700">{doc.title}</CardTitle>
+                                        <CardTitle className="text-lg text-cyan-700">{file.title}</CardTitle>
                                     </div>
                                     <CardDescription>
-                                        Caricato il {new Date(doc.createdAt).toLocaleDateString()}
+                                        Caricato il {new Date(file.createdAt).toLocaleDateString()}
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <p className="text-cyan-600 mb-4">{doc.content}</p>
-                                    {doc.files && doc.files.length > 0 && (
-                                        <div className="mt-4">
-                                            <h4 className="text-sm font-medium mb-2">Allegati:</h4>
-                                            <div className="flex flex-wrap gap-2">
-                                                {doc.files.map((file) => (
-                                                    <Button
-                                                        key={file.id}
-                                                        variant="outline"
-                                                        className="text-xs"
-                                                        onClick={() => window.open(file.path, '_blank')}
-                                                    >
-                                                        <FileText className="h-4 w-4 mr-2" />
-                                                        {file.filename}
-                                                    </Button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
+                                    <p className="text-cyan-600 mb-4">{file.content}</p>
+                                    <Button
+                                        variant="outline"
+                                        className="text-xs"
+                                        onClick={() => window.open(file.path, '_blank')}
+                                    >
+                                        <FileText className="h-4 w-4 mr-2" />
+                                        {file.filename}
+                                    </Button>
                                 </CardContent>
                             </Card>
                         ))}
