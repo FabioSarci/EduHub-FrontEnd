@@ -26,35 +26,46 @@ export default function LandingPage() {
                   <div className="space-x-4">
                     <Button onClick={() =>{
                       const token = localStorage.getItem("ACCESS_TOKEN");
-                      axios.get("http://localhost:7001/check",{
-                        headers: {
-                          Authorization: `Bearer ${token}`,
-                      },
-                      })
-                      .then((res) =>{
-                        res.status === 200 && navigate("/dashboard")
-                        
-                      }).catch((err) =>{
-                        err.status === 401 && navigate("/signup")
-                        
-                      })
-                    }}  className="bg-cyan-800 hover:bg-cyan-900 text-white">
+                      
+                      if(!token){
+                        navigate("/signup")
+                      }else{
+                        axios.get("http://localhost:7001/check",{
+                          headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                        })
+                        .then((res) =>{
+                          res.status === 200 && navigate("/dashboard")
+                          
+                        }).catch((err) =>{
+                          err.status === 401 && navigate("/signup")
+                          
+                        })
+                      }
+                    }
+                      }  className="bg-cyan-800 hover:bg-cyan-900 text-white">
                       Get Started
                     </Button>
                     <Button onClick={() =>{
                       const token = localStorage.getItem("ACCESS_TOKEN");
-                      axios.get("http://localhost:7001/check",{
-                        headers: {
-                          Authorization: `Bearer ${token}`,
-                      },
-                      })
-                      .then((res) =>{
-                        res.status === 200 && navigate("/dashboard")
-                        
-                      }).catch((err) =>{
-                        err.status === 401 && navigate("/login")
-                        
-                      })
+                      
+                      if(!token){
+                        navigate("/login")
+                      }else{
+                        axios.get("http://localhost:7001/check",{
+                          headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                        })
+                        .then((res) =>{
+                          res.status === 200 && navigate("/dashboard")
+                          
+                        }).catch((err) =>{
+                          err.status === 401 && navigate("/login")
+                          
+                        })
+                      }
                     }}  variant="outline" className="text-cyan-800 border-cyan-800 hover:bg-cyan-50">
                       Log In
                     </Button>
@@ -106,18 +117,23 @@ export default function LandingPage() {
               </div>
               <Button size="lg" onClick={() =>{
                       const token = localStorage.getItem("ACCESS_TOKEN");
-                      axios.get("http://localhost:7001/check",{
-                        headers: {
-                          Authorization: `Bearer ${token}`,
-                      },
-                      })
-                      .then((res) =>{
-                        res.status === 200 && navigate("/dashboard")
-                        
-                      }).catch((err) =>{
-                        err.status === 401 && navigate("/signup")
-                        
-                      })
+                      
+                      if(!token){
+                        navigate("/signup")
+                      }else{
+                        axios.get("http://localhost:7001/check",{
+                          headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                        })
+                        .then((res) =>{
+                          res.status === 200 && navigate("/dashboard")
+                          
+                        }).catch((err) =>{
+                          err.status === 401 && navigate("/signup")
+                          
+                        })
+                      }
                     }} className="bg-cyan-800 hover:bg-cyan-900 text-white">
                 Sign Up Now
               </Button>

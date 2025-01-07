@@ -10,6 +10,7 @@ import { DashboardLayout } from './components/DashboardLayout'
 import { AuthProvider } from './contexts/AuthContext'
 import { UserProvider } from './contexts/UserContext'
 import CoursePage from './pages/CoursePage'
+import { CourseProvider } from './contexts/CourseContext'
 
 
 function App() {
@@ -17,20 +18,22 @@ function App() {
     <Router>
       <AuthProvider>
         <UserProvider>
-          <SidebarProvider>
-            <Routes>
-              <Route element={<Layout />}>
-                <Route path='/' element={<LandingPage />} />
-              </Route>
-              <Route path="/signup" element={<SignUpPage />} />
-              <Route path="/login" element={<LoginPage />} />
-                  <Route path="/dashboard" element={<DashboardLayout><DashboardPage /></DashboardLayout>} />
-                  <Route path="/course/{id}" element={<DashboardLayout><CoursePage /></DashboardLayout>} />
-                  <Route path="/assignments" element={<DashboardLayout><div>Assignments Page</div></DashboardLayout>} />
-                  <Route path="/grades" element={<DashboardLayout><div>Grades Page</div></DashboardLayout>} />
-            </Routes>
-            <Toaster />
-          </SidebarProvider>
+          <CourseProvider>
+            <SidebarProvider>
+              <Routes>
+                <Route element={<Layout />}>
+                  <Route path='/' element={<LandingPage />} />
+                </Route>
+                <Route path="/signup" element={<SignUpPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                    <Route path="/dashboard" element={<DashboardLayout><DashboardPage /></DashboardLayout>} />
+                    <Route path="/course/:id" element={<DashboardLayout><CoursePage /></DashboardLayout>} />
+                    <Route path="/assignments" element={<DashboardLayout><div>Assignments Page</div></DashboardLayout>} />
+                    <Route path="/grades" element={<DashboardLayout><div>Grades Page</div></DashboardLayout>} />
+              </Routes>
+              <Toaster />
+            </SidebarProvider>
+          </CourseProvider>
         </UserProvider>
       </AuthProvider>
     </Router>

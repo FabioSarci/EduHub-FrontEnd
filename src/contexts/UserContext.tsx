@@ -4,7 +4,6 @@ import { createContext, ReactNode, useContext, useEffect, useReducer, useState }
 
 interface IUserContextState {
     users: IUser[];
-    products: any[];
 }
 
 interface IUserContextProps extends IUserContextState {
@@ -84,7 +83,6 @@ const UserReducer = (state: IUserContextState, action: UserAction): IUserContext
 
 const initialState: IUserContextState = {
     users: [],
-    products: [],
 };
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {

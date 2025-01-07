@@ -47,6 +47,7 @@ export default function LoginPage() {
   
 
   const submitHandler: SubmitHandler<LoginFormValues> = (data) => {
+    
     setError(null);
     axios
             .post('http://localhost:7001/login', data)
