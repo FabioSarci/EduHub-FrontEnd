@@ -9,8 +9,9 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from "@/components/ui/sidebar"
-import { BookOpen, Users, Calendar, Award } from 'lucide-react'
+import { BookOpen, Users, Calendar, Award, LogOut } from 'lucide-react'
 import { useAuth } from "@/contexts/AuthContext"
+import { NotificationSection } from "./NotificationSection";
 
 export function Sidebar() {
 
@@ -63,11 +64,22 @@ export function Sidebar() {
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter>
-        <Button onClick={logout} variant="ghost" className="w-full justify-start border-t border-t-cyan-800 mr-2 h-4 mt-2 mb-2 p-4" asChild>
-            <button>
-              Log out
-            </button>
-        </Button>
+        <div className="mt-auto">
+          <div className="">
+            <NotificationSection />
+          </div>
+          
+          <div className="p-4 border-t border-cyan-800">
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-cyan-800 hover:text-cyan-900"
+              onClick={logout}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </Button>
+          </div>
+        </div>
       </SidebarFooter>
     </ShadcnSidebar>
   )

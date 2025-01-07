@@ -3,10 +3,10 @@ import { ICourseProps } from "@/interfaces/Course";
 import { IFile } from "@/interfaces/Document";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, BookOpen, Brain, FileText, Upload } from "lucide-react";
+import { PlusCircle, BookOpen, Brain, FileText, Upload, ArrowLeft } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,6 +30,7 @@ const CoursePage = () => {
     const [quizzes, setQuizzes] = useState<IQuiz[]>([]);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    const navigate = useNavigate();
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
@@ -57,9 +58,8 @@ const CoursePage = () => {
                             title: "Introduzione al corso",
                             content: "Materiale introduttivo del corso",
                             path: "/files/intro.pdf",
-                            mimetype: "application/pdf",
-                            size: 1024,
                             userId: 1,
+                            courseId: Number(id),
                             createdAt: new Date().toISOString(),
                             updatedAt: new Date().toISOString()
                         }
@@ -95,23 +95,26 @@ const CoursePage = () => {
         const formData = new FormData(e.currentTarget);
         
         const token = localStorage.getItem("ACCESS_TOKEN");
-        if (token) {
+        if (token && id) {
             try {
                 const fileFormData = new FormData();
                 fileFormData.append('title', formData.get('title') as string);
                 fileFormData.append('content', formData.get('content') as string);
+                fileFormData.append('courseId', id.toString());
                 if (selectedFiles[0]) {
                     fileFormData.append('file', selectedFiles[0]);
                 }
 
-                const response = await axios.post<IFile>(`http://localhost:7001/files/upload`, fileFormData, {
+                const response = await axios.post<IFile>(`http://localhost:7001/file`, {
+                    title: formData.get('title'),
+                    content: formData.get('content'),
+                    courseId: parseInt(id),
+                    file: selectedFiles[0]
+                }, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                         'Content-Type': 'multipart/form-data',
-                        'Accept': 'application/json',
-                        'Access-Control-Allow-Origin': '*'
                     },
-                    withCredentials: true
                 });
 
                 setFiles([response.data, ...files]);
@@ -124,7 +127,16 @@ const CoursePage = () => {
     };
 
     return (
-        <div className="space-y-4 p-4">
+        <div className="space-y-2 p-4">
+            {/* Back Button */}
+            <Button 
+                variant="ghost" 
+                className="flex items-center text-cyan-800 hover:text-cyan-900 h-8 px-2"
+                onClick={() => navigate('/dashboard')}
+            >
+                <ArrowLeft className="h-4 w-4" />
+            </Button>
+
             {/* Course Info Card */}
             <Card className="border border-cyan-800 bg-cyan-800 rounded-xl">
                 <CardHeader>
