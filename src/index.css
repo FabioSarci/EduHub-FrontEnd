@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+ 
+
+.blurred-background {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  
+  .blurred-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('./assets/Sfondo.png');
+    background-size: cover;
+    background-position: center; 
+    filter: blur(10px);
+    z-index: 1;
+  }
+
+  .content {
+    z-index: 2;
+  }
