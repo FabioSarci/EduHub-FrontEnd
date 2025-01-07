@@ -4,6 +4,7 @@ import { ICourseProps } from "@/interfaces/Course";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 
 export default function DashboardPage() {
 
@@ -55,7 +56,7 @@ export default function DashboardPage() {
     <>
       <div className="content pt-2">
         
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
           {courses?.map((course) => (
                     <CourseCard
                         key={course.id}
@@ -72,15 +73,30 @@ export default function DashboardPage() {
 }
 
 function CourseCard({ subject, course, section, id}: { subject: string; course: string; section: string, id:string }) {
-  const navigate = useNavigate()
-  return (
-    <button onClick={() =>{navigate(`/course/${id}`)}}>
-        <div className="flex flex-col p-4 bg-white shadow-lg rounded-2xl border border-cyan-500">
-        <h2 className="text-2xl font-bold text-cyan-700">{subject}</h2>
-        <p className="text-cyan-600">{course}</p>
-        <p className="text-xs mt-4">{section}</p>
-      </div>
-    </button>
-  )
+    const navigate = useNavigate()
+    return (
+        <button 
+            onClick={() => {navigate(`/course/${id}`)}}
+            className="w-full transition-all duration-300 hover:scale-[1.02]"
+        >
+            <div className="flex flex-col h-full p-6 bg-white shadow-lg rounded-2xl border-2 border-cyan-500 hover:border-cyan-600">
+                <div className="flex-1">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-2xl font-bold text-cyan-700">{subject}</h2>
+                        <span className="px-3 py-1 text-xs font-medium text-cyan-600 bg-cyan-100 rounded-full">
+                            {section}
+                        </span>
+                    </div>
+                    <p className="text-lg text-cyan-600">{course}</p>
+                </div>
+                <div className="mt-4 pt-4 border-t border-cyan-100">
+                    <p className="text-sm text-cyan-500 flex items-center">
+                        Clicca per vedere i dettagli
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                    </p>
+                </div>
+            </div>
+        </button>
+    )
 }
 

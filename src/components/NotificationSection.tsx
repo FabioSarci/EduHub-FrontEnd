@@ -49,6 +49,26 @@ export function NotificationSection() {
     setIsDialogOpen(true);
   };
 
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return "Data non disponibile";
+    try {
+      // Prova prima a parsare la data
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return "Data non valida";
+      }
+      return date.toLocaleString('it-IT', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return "Data non valida";
+    }
+  };
+
   return (
     <>
       <DropdownMenu>
@@ -93,7 +113,7 @@ export function NotificationSection() {
           <div className="space-y-4">
             <p className="text-cyan-600">{selectedNotification?.body}</p>
             <p className="text-sm text-cyan-400">
-              Ricevuta il: {selectedNotification && new Date(selectedNotification.createdAt).toLocaleString()}
+              Ricevuta il: {formatDate(selectedNotification?.createdAt)}
             </p>
           </div>
         </DialogContent>

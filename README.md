@@ -1,50 +1,82 @@
-# React + TypeScript + Vite
+# EduHub - Piattaforma di E-Learning
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+EduHub è una piattaforma di e-learning moderna e intuitiva che permette a studenti e docenti di gestire corsi, materiali didattici e quiz in modo semplice ed efficace. Sviluppata con React, TypeScript e Vite, offre un'esperienza utente fluida e reattiva.
 
-Currently, two official plugins are available:
+## Caratteristiche Principali
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 👥 Gestione utenti con ruoli (studenti e docenti)
+- 📚 Gestione corsi e materiali didattici
+- ✍️ Sistema di quiz e valutazioni
+- 🎨 Interfaccia moderna con Tailwind CSS
+- 🔒 Autenticazione sicura con JWT
 
-## Expanding the ESLint configuration
+## Prerequisiti
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+- Node.js (versione 18 o superiore)
+- npm o yarn
+- Git
 
-- Configure the top-level `parserOptions` property like this:
+## Installazione
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+1. Clona il repository:
+```bash
+git clone https://github.com/FabioSarci/EduHub-FrontEnd
+cd eduhub
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
-
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+2. Installa le dipendenze:
+```bash
+npm install
+# oppure
+yarn install
 ```
+
+3. Crea un file `.env` nella root del progetto:
+```env
+VITE_STORAGE_URL=http://localhost:7001
+```
+
+4. Avvia il server di sviluppo:
+```bash
+npm run dev
+# oppure
+yarn dev
+```
+
+## Tecnologie Utilizzate
+
+- React 18
+- TypeScript
+- Vite
+- Tailwind CSS
+- Axios
+- React Router DOM
+- Radix UI
+- Lucide React
+
+## Struttura del Progetto
+
+```
+src/
+├── components/     # Componenti riutilizzabili
+├── contexts/      # Context React per la gestione dello stato
+├── hooks/         # Custom hooks
+├── interfaces/    # Interfacce TypeScript
+├── lib/          # Utility e configurazioni
+└── pages/        # Componenti pagina
+```
+
+## Script Disponibili
+
+- `npm run dev` - Avvia il server di sviluppo
+- `npm run build` - Compila il progetto per la produzione
+- `npm run lint` - Esegue il linting del codice
+- `npm run preview` - Visualizza l'anteprima della build di produzione
+
+## Contribuire
+
+Le pull request sono benvenute. Per modifiche importanti, apri prima un issue per discutere cosa vorresti cambiare.
+
+## Licenza
+
+[MIT](https://choosealicense.com/licenses/mit/)
