@@ -9,7 +9,7 @@ import { ArrowRight } from "lucide-react";
 export default function DashboardPage() {
 
   const {user} = useAuth()
-  const {usercourses, getCourses} = useCourseContext();
+  const {usercourses, getUserCourses} = useCourseContext();
   const [courses, setCourses] = useState<ICourseProps[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -17,7 +17,7 @@ export default function DashboardPage() {
     const fetchUserCourses = async () => {
       const token = localStorage.getItem("ACCESS_TOKEN");
       if(token && user?.id && !usercourses?.length) {
-        await getCourses(token, user.id);
+        await getUserCourses(token, user.id);
       }
     };
     
@@ -31,7 +31,7 @@ export default function DashboardPage() {
         try {
           const responses = await Promise.all(
             (usercourses ?? []).map(course => 
-              axios.get(`http://localhost:7001/course/${course.id}`, {
+              axios.get(`http://localhost:7001/course/${course.courseId}`, {
                 headers: {
                   Authorization: `Bearer ${token}`,
                 },

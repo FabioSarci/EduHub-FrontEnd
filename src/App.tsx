@@ -26,10 +26,10 @@ function App() {
                 </Route>
                 <Route path="/signup" element={<SignUpPage />} />
                 <Route path="/login" element={<LoginPage />} />
-                    <Route path="/dashboard" element={<DashboardLayout><DashboardPage /></DashboardLayout>} />
-                    <Route path="/course/:id" element={<DashboardLayout><CoursePage /></DashboardLayout>} />
-                    <Route path="/assignments" element={<DashboardLayout><div>Assignments Page</div></DashboardLayout>} />
-                    <Route path="/grades" element={<DashboardLayout><div>Grades Page</div></DashboardLayout>} />
+                  <Route path="/dashboard" element={<DashboardLayout><DashboardPage /></DashboardLayout>} />
+                  <Route path="/course/:id" element={<DashboardLayout><CoursePage /></DashboardLayout>} />
+                  <Route path="/assignments" element={<DashboardLayout><div>Assignments Page</div></DashboardLayout>} />
+                  <Route path="/grades" element={<DashboardLayout><div>Grades Page</div></DashboardLayout>} />
               </Routes>
               <Toaster />
             </SidebarProvider>

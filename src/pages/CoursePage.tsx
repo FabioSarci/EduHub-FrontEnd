@@ -95,22 +95,15 @@ const CoursePage = () => {
         const formData = new FormData(e.currentTarget);
         
         const token = localStorage.getItem("ACCESS_TOKEN");
-        if (token && id) {
+        if (token && id && selectedFiles[0]) {
             try {
                 const fileFormData = new FormData();
                 fileFormData.append('title', formData.get('title') as string);
                 fileFormData.append('content', formData.get('content') as string);
-                fileFormData.append('courseId', id.toString());
-                if (selectedFiles[0]) {
-                    fileFormData.append('file', selectedFiles[0]);
-                }
+                fileFormData.append('courseId', id);
+                fileFormData.append('file', selectedFiles[0]);
 
-                const response = await axios.post<IFile>(`http://localhost:7001/file`, {
-                    title: formData.get('title'),
-                    content: formData.get('content'),
-                    courseId: parseInt(id),
-                    file: selectedFiles[0]
-                }, {
+                const response = await axios.post<IFile>(`http://localhost:7001/file`, fileFormData, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                         'Content-Type': 'multipart/form-data',

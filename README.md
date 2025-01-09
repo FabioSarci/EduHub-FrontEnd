@@ -21,7 +21,7 @@ EduHub è una piattaforma di e-learning moderna e intuitiva che permette a stude
 1. Clona il repository:
 ```bash
 git clone https://github.com/FabioSarci/EduHub-FrontEnd
-cd eduhub
+cd EduHub-FrontEnd
 ```
 
 2. Installa le dipendenze:

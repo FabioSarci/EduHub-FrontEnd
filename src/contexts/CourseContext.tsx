@@ -1,56 +1,56 @@
 import { createContext, ReactNode, useContext, useReducer, useState } from "react";
 import axios from "axios";
+import { ICourseProps } from "@/interfaces/Course";
 
-export interface ICourse {
+export interface IUserCourse {
     id: number;
     courseId : string
     userId: string;
 }
 
 interface ICourseContextState {
-    courses: ICourse[];
-    userCourses: ICourse[];
+    courses: ICourseProps[];
+    userCourses: IUserCourse[];
 }
 
 interface ICourseContextProps extends ICourseContextState {
     dispatch: React.Dispatch<CourseAction>;
-    handleCourseCreate: (courseData: Omit<ICourse, "id">) => void;
-    handleCourseEdit: (courseUpdData: Partial<ICourse>) => void;
-    handleCourseDelete: (id: ICourse["id"]) => void;
-    fetchUserCourses: (userId: number) => void;
-    getCourses: (token: string, id: number) => void;
-    usercourses: ICourse[] | undefined;
+    handleCourseCreate: (courseData: Omit<ICourseProps, "id">) => void;
+    handleCourseEdit: (courseUpdData: Partial<ICourseProps>) => void;
+    handleCourseDelete: (id: ICourseProps["id"]) => void;
+    getUserCourses: (token: string, id: number) => void;
+    usercourses: IUserCourse[] | undefined;
 }
 
 type CourseAction =
     | {
           type: "SET_COURSES";
           payload: {
-              courses: ICourse[];
+              courses: ICourseProps[];
           };
       }
     | {
           type: "SET_USER_COURSES";
           payload: {
-              userCourses: ICourse[];
+              userCourses: IUserCourse[];
           };
       }
     | {
           type: "ADD_COURSE";
           payload: {
-              course: ICourse;
+              course: ICourseProps;
           };
       }
     | {
           type: "UPDATE_COURSE";
           payload: {
-              course: Partial<ICourse>;
+              course: Partial<ICourseProps>;
           };
       }
     | {
           type: "DELETE_COURSE";
           payload: {
-              courseId: ICourse["id"];
+              courseId: ICourseProps["id"];
           };
       };
 
@@ -103,16 +103,16 @@ const initialState: ICourseContextState = {
 
 export const CourseProvider = ({ children }: { children: ReactNode }) => {
     const [state, dispatch] = useReducer(CourseReducer, initialState);
-    const [usercourses, setUserCourses] = useState<ICourse[]>()
+    const [usercourses, setUserCourses] = useState<IUserCourse[]>();
 
-    function handleCourseCreate(courseData: Omit<ICourse, "id">) {
+    function handleCourseCreate(courseData: Omit<ICourseProps, "id">) {
         axios
-            .post("https://jsonplaceholder.typicode.com/posts", courseData) // Replace with your API endpoint
+            .post("http://localhost:7001/course/create", courseData)
             .then(({ data }) => {
                 dispatch({
                     type: "ADD_COURSE",
                     payload: {
-                        course: { id: data.id, ...courseData },
+                        course: { id: data.id, ...courseData } as ICourseProps,
                     },
                 });
             })
@@ -121,7 +121,7 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
             });
     }
 
-    function handleCourseEdit(courseUpdData: Partial<ICourse>) {
+    function handleCourseEdit(courseUpdData: Partial<ICourseProps>) {
         axios
             .put(`https://jsonplaceholder.typicode.com/posts/${courseUpdData.id}`, courseUpdData) // Replace with your API endpoint
             .then(() => {
@@ -137,7 +137,7 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
             });
     }
 
-    function handleCourseDelete(id: ICourse["id"]) {
+    function handleCourseDelete(id: ICourseProps["id"]) {
         axios
             .delete(`https://jsonplaceholder.typicode.com/posts/${id}`) // Replace with your API endpoint
             .then(() => {
@@ -152,25 +152,9 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
                 console.error(err);
             });
     }
-
-    function fetchUserCourses(userId: number) {
+    const getUserCourses = (token: string, userId: number) =>{
         axios
-            .get(`https://your-api-endpoint.com/users/${userId}/courses`) // Replace with your API endpoint
-            .then(({ data }) => {
-                dispatch({
-                    type: "SET_USER_COURSES",
-                    payload: {
-                        userCourses: data,
-                    },
-                });
-            })
-            .catch((err) => {
-                console.error(err);
-            });
-    }
-    const getCourses = (token: string, id: number) =>{
-        axios
-                        .get(`http://localhost:7001/usercourses-by-userid/${id}`,{
+                        .get(`http://localhost:7001/usercourses-by-userid/${userId}`,{
                             headers: {
                                 Authorization: `Bearer ${token}`,
                             },
@@ -191,7 +175,7 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
     }
 
     return (
-        <CourseContext.Provider value={{ ...state, usercourses, dispatch, handleCourseCreate, handleCourseEdit, handleCourseDelete, fetchUserCourses ,getCourses}}>
+        <CourseContext.Provider value={{ ...state, usercourses, dispatch, handleCourseCreate, handleCourseEdit, handleCourseDelete ,getUserCourses}}>
             {children}
         </CourseContext.Provider>
     );
